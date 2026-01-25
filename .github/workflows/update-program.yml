@@ -1,47 +1,54 @@
 name: Update Church Bulletin
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # allows manual trigger for testing
   schedule:
-    - cron: "0 12 * * SUN"   # Sundays at 12:00 UTC (adjust as needed)
+    - cron: "0 12 * * SUN"  # Sunday 12:00 UTC (~4 AM PST / 5 AM PDT)
 
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1️⃣ Checkout the gh-pages branch (create if it doesn't exist)
+      - name: Checkout gh-pages branch
         uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          persist-credentials: false  # we'll handle auth automatically
+          fetch-depth: 0
 
+      # 2️⃣ Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          pip install gdown
+      # 3️⃣ Install gdown
+      - name: Install gdown
+        run: pip install --upgrade gdown
 
+      # 4️⃣ Download latest bulletin PDF from Google Drive
       - name: Download latest bulletin
         run: |
-          # Write the service account key to a file
+          # Write the service account JSON key to a file
           echo "${{ secrets.GDRIVE_SERVICE_ACCOUNT }}" > service_account.json
 
-          # Set the environment variable so gdown uses it
+          # Set environment variable so gdown uses it
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service_account.json
 
           # Download the PDF
           gdown --id ${{ secrets.GDRIVE_FILE_ID }} --output bulletin.pdf
 
+      # 5️⃣ Commit & push only if the file changed
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
           if git diff --quiet; then
-            echo "No changes."
+            echo "No changes detected."
           else
             git add bulletin.pdf
             git commit -m "Update bulletin"
-            git push "https://${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git"
-          fi
+            git push origin gh-pages
