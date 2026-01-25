@@ -52,3 +52,4 @@ jobs:
             git add bulletin.pdf
             git commit -m "Update bulletin"
             git push origin gh-pages
+          fi
