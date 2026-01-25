@@ -1,0 +1,48 @@
+name: Update Church Bulletin
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * SUN"   # Sundays at 12:00 UTC (adjust as needed)
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install gdown
+
+      - name: Write service account key
+        run: |
+          echo '${{ secrets.GDRIVE_SERVICE_ACCOUNT }}' > service_account.json
+
+      - name: Download latest bulletin
+        env:
+          FILE_ID: ${{ secrets.GDRIVE_FILE_ID }}
+        run: |
+          gdown --id "$FILE_ID" \
+                --output bulletin.pdf \
+                --service-account service_account.json
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          if git diff --quiet; then
+            echo "No changes."
+          else
+            git add bulletin.pdf
+            git commit -m "Update bulletin"
+            git push
+          fi
