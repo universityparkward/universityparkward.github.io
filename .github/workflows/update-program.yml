@@ -51,5 +51,5 @@ jobs:
           else
             git add bulletin.pdf
             git commit -m "Update bulletin"
-            git push origin gh-pages
+            git push "https://${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git"
           fi
