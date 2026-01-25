@@ -3,7 +3,7 @@ name: Update Church Bulletin
 on:
   workflow_dispatch:  # allows manual trigger for testing
   schedule:
-    - cron: "0 12 * * SUN"  # Sunday 12:00 UTC (~4 AM PST / 5 AM PDT)
+    - cron: "15 21 * * SUN" #"0 12 * * SUN"  # Sunday 12:00 UTC (~4 AM PST / 5 AM PDT)
 
 jobs:
   update:
