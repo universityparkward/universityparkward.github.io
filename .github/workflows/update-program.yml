@@ -22,17 +22,16 @@ jobs:
         run: |
           pip install gdown
 
-      - name: Write service account key
-        run: |
-          echo '${{ secrets.GDRIVE_SERVICE_ACCOUNT }}' > service_account.json
-
       - name: Download latest bulletin
-        env:
-          FILE_ID: ${{ secrets.GDRIVE_FILE_ID }}
         run: |
-          gdown --id "$FILE_ID" \
-                --output bulletin.pdf \
-                --service-account service_account.json
+          # Write the service account key to a file
+          echo "${{ secrets.GDRIVE_SERVICE_ACCOUNT }}" > service_account.json
+
+          # Set the environment variable so gdown uses it
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service_account.json
+
+          # Download the PDF
+          gdown --id ${{ secrets.GDRIVE_FILE_ID }} --output bulletin.pdf
 
       - name: Commit and push if changed
         run: |
