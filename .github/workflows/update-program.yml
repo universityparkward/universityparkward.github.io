@@ -2,7 +2,7 @@ name: Update Church Bulletin
 
 on:
   schedule:
-    - cron: "50 * * * *" #"0 12 * * SUN"  # Sunday 12:00 UTC (~4 AM PST / 5 AM PDT)
+    - cron: "0 12 * * SUN"  # Sunday 12:00 UTC (~4 AM PST / 5 AM PDT)
   # Allows manual trigger for testing
   workflow_dispatch:
 
@@ -38,8 +38,8 @@ jobs:
           # Set environment variable so gdown uses it
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service_account.json
 
-          # Download the PDF
-          gdown --id ${{ secrets.GDRIVE_FILE_ID }} --output bulletin.pdf
+          # Download the PDF (using file ID as positional argument for gdown compatibility)
+          gdown "${{ secrets.GDRIVE_FILE_ID }}" -O bulletin.pdf
 
       # 5️⃣ Commit & push only if the file changed
       - name: Commit and push if changed
